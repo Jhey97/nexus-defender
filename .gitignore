@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+
+# Rust / PyO3
+/target/
+**/*.rs.bk
+
+# IDEs e Sistema
+.vscode/
+.idea/
+.DS_Store

@@ -1,0 +1,15 @@
+[package]
+name = "core_rust"
+version = "0.1.0"
+edition = "2024"
+authors = ["José Henrique Cordeiro Vieira"]
+description = "Motor de mitigação de alta performance e baixa latência para o ecossistema Nexus-Defender."
+license = "MIT"
+
+# Veja mais chaves e suas definições em https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "core_rust"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = "0.29.0"

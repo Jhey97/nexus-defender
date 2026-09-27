@@ -1,0 +1,17 @@
++-------------------------------------------------------+
+|                 NEXUS-DEFENDER CORE                   |
+|  [Worker DDoS] [Worker Exploit] [Agente RL (Python)]  |
+|         |                   |                   |     |
+|         +---------+---------+                   |     |
+|                   v                             v     |
+|           [FastAPI / WebSockets] <---> [Rust Mitigator]|
++-------------------|-----------------------------------+
+                    | (WebSocket Stream JSON)
+                    v
++-------------------------------------------------------+
+|                    Navegador Web                      |
+|  • Stream de Logs (Terminal estilo Matrix/Cyber)      |
+|  • Métricas em Tempo Real (Chart.js / HTML5 Canvas)   |
+|  • Tabela Dinâmica de IPs Bloqueados / Quarentena     |
+|  • Grafo de Transição de Markov & Score RL            |
++-------------------------------------------------------+

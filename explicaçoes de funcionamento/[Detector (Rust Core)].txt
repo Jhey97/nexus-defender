@@ -1,0 +1,56 @@
+[Detector (Rust Core)]
+                               │
+                   (Fila de Anomalias Brutas)
+                               │
+               [Event Router Assíncrono (Python)]
+            ┌──────────────────┼──────────────────┐
+            ▼                  ▼                  ▼
+      (Fila DDoS)       (Fila Exploit)       (Fila Scan)
+            │                  │                  │
+            ▼                  ▼                  ▼
+     [Worker DDoS]      [Worker Exploit]    [Worker Scan]
+     (Agente Q-DDoS)    (Agente Q-Ex)       (Agente Q-Scan)
+            └──────────────────┬──────────────────┘
+                               ▼
+                   [Core Rust (Quarantine)]
+
+
+Este código evolui o motor de resposta a ameaças ao transitar de um único agente para um sistema multi-agente especializado acoplado a um roteador de eventos assíncrono (Fan-Out Pattern).
+
+Em vez de tomar uma decisão genérica, o sistema agora classifica o vetor de ataque e delega a tomada de decisão para um agente de Q-Learning treinado/configurado especificamente para aquele tipo de ameaça.
+
+Componentes Arquiteturais
+1. Herança e Agentes Especializados (SpecializedQAgent)
+A classe base SpecializedQAgent provê a mecânica de decisão Epsilon-Greedy sobre a matriz Q. Cada classe filha representa um especialista com políticas e tabelas Q ajustadas para vetores de ataque distintos:
+
+AgentDDoS: Especialista em volume extremo de tráfego. Prioriza ações de limitação de taxa como TARPIT e DROP para mitigar exaustão de recursos.
+
+AgentExploit: Especialista em anomalias de payload e alta entropia. Responde com maior severidade, priorizando QUARENTENA_SANDBOX e DROP DEFINITIVO.
+
+AgentScan: Especialista em varredura e enumeração de portas. Aplica estratégias para desacelerar o atacante (MONITORAR ou TARPIT).
+
+2. Roteador de Eventos (event_router)
+Atua como o ponto de entrada (Ingress) que recebe os diagnósticos brutoss através da fila principal (queue_in). Analisa as métricas contidas em detalhes_tecnicos e distribui o evento para a fila do worker correto:
+
+                      ┌─► Fila DDoS ────► Worker DDoS (AgentDDoS)
+                      │
+Fila Ingress ─► Router ─┼─► Fila Exploit ─► Worker Exploit (AgentExploit)
+                      │
+                      └─► Fila Scan ───► Worker Scan (AgentScan)
+3. Workers Assíncronos Paralelos (worker_ddos, worker_exploit, worker_scan)
+Cada worker executa de forma assíncrona em background consumindo sua respectiva fila especializada:
+
+Retira o diagnóstico da fila dedicada (queue_xx.get()).
+
+Invoca o agente especializado correspondente para decidir a contramedida.
+
+Se a ação requerer contenção (TARPIT, QUARENTENA_SANDBOX ou BLOQUEAR_DROP), executa a chamada nativa self.quarantine_manager.isolate_ip() no Core em Rust.
+
+Sinaliza a conclusão do processamento na fila (task_done()).
+
+Vantagens Desta Abordagem
+Isolamento de Domínio: A política de decisão para varreduras de porta (Scan) não contamina ou desacelera a política rígida necessária para exploração de código (Exploit).
+
+Escalabilidade Concorrente: Ao dividir a fila principal em filas especializadas consumidas por workers asyncio, o sistema aproveita melhor o processamento não-bloqueante.
+
+Execução Nativa Segura: Toda a mitigação crítica continua centralizada no QuarantineManager em Rust, garantindo baixíssima latência e segurança de memória concorrente via Mutex.

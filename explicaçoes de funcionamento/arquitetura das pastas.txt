@@ -1,0 +1,44 @@
+nexus-defender/
+├── core_rust/                      # Core de Alta Performance & Ingestão (Rust)
+│   ├── Cargo.toml                  # Dependências Rust (PyO3, etc.)
+│   └── src/
+│       ├── lib.rs                  # Interface PyO3 exposta para Python
+│       ├── entropy.rs              # Cálculo de Entropia de Shannon de payloads
+│       └── quarantine.rs           # Gerenciador de Quarentena / Tarpit (Memory-safe)
+│
+├── services/                       # Microserviços do Sistema
+│   ├── detector_service/           # Microserviço 1: Event Anomaly Detector
+│   │   ├── __init__.py
+│   │   ├── main.py                 # Ponto de entrada (FastAPI / Worker)
+│   │   └── ingestor.py             # Captura de dados/logs em tempo real
+│   │
+│   ├── diagnostic_service/         # Microserviço 2: Diagnostic & Categorization (1-5)
+│   │   ├── __init__.py
+│   │   ├── main.py                 # API de Diagnóstico (FastAPI)
+│   │   ├── classifier.py           # Classificador Supervisionado
+│   │   └── schemas.py              # Pydantic Schemas / Dataclasses
+│   │
+│   └── defense_service/            # Microserviço 3: Autonomous Defense Engine
+│       ├── __init__.py
+│       ├── main.py                 # API do Agente de Defesa
+│       ├── q_learning_agent.py     # Agente Q-Learning / Tabela / Bellman
+│       └── actions.py              # Execução de Ações (Drop, Quarentena, Monitor)
+│
+├── common/                         # Código Compartilhado entre Microserviços
+│   ├── __init__.py
+│   ├── config.py                   # Configurações globais / Variáveis de ambiente
+│   └── events.py                   # Definição dos eventos (Event-Driven)
+│
+├── ml_models/                      # Modelos de Machine Learning & Datasets
+│   ├── train_classifier.py         # Script de treinamento supervisionado
+│   └── saved_models/               # Pesos dos modelos salvos (.pkl / .pt)
+│
+├── tests/                          # Testes Unitários e de Integração
+│   ├── test_rust_core.py
+│   ├── test_diagnostic.py
+│   └── test_q_learning.py
+│
+├── docker-compose.yml              # Orquestração dos microserviços e Redis
+├── pyproject.toml                  # Configuração do ambiente e build do Rust (Maturin)
+├── requirements.txt                # Dependências Python
+└── README.md                       # Documentação do Projeto
